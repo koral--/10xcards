@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import { Button } from './ui/button.tsx';
+import { Textarea } from './ui/textarea.tsx';
+import { useToast } from '../hooks/use-toast.ts';
+import { supabase } from '../lib/supabase.ts';
+import { textImprover } from '../lib/textImprover.ts';
+import { Wand2 } from 'lucide-react';
 
 export function FlashcardForm() {
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImproving, setIsImproving] = useState(false);
   const { toast } = useToast();
 
   const isValid = front.length > 0 && front.length <= 200 && back.length > 0 && back.length <= 500;
+  const canImprove = front.length > 0 || back.length > 0;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,6 +51,39 @@ export function FlashcardForm() {
     setIsSubmitting(false);
   }
 
+  async function handleImprove() {
+    if (!canImprove) return;
+
+    setIsImproving(true);
+    try {
+      const [improvedFront, improvedBack] = await Promise.all([
+        front ? textImprover.improve(front) : front,
+        back ? textImprover.improve(back) : back
+      ]);
+
+      if (improvedFront === front && improvedBack === back) {
+        toast({
+          description: "No improvements needed! Your text looks good.",
+        });
+      } else {
+        setFront(improvedFront);
+        setBack(improvedBack);
+        toast({
+          title: "Text improved!",
+          description: "The text has been checked and improved.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to improve text. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImproving(false);
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
@@ -79,13 +116,24 @@ export function FlashcardForm() {
         </p>
       </div>
 
-      <Button 
-        type="submit" 
-        disabled={!isValid || isSubmitting}
-        className="w-full"
-      >
-        {isSubmitting ? 'Creating...' : 'Create Flashcard'}
-      </Button>
+      <div className="flex gap-4">
+        <Button
+          type="button"
+          onClick={handleImprove}
+          disabled={!canImprove || isImproving}
+          className="flex-1"
+        >
+          <Wand2 className="w-4 h-4 mr-2" />
+          {isImproving ? 'Improving...' : 'Fix Flashcard'}
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={!isValid || isSubmitting}
+          className="flex-1"
+        >
+          {isSubmitting ? 'Creating...' : 'Create Flashcard'}
+        </Button>
+      </div>
     </form>
   );
 }

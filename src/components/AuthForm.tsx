@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import { Button } from './ui/button.tsx';
+import { Input } from './ui/input.tsx';
+import { useToast } from '../hooks/use-toast.ts';
+import { supabase } from '../lib/supabase.ts';
 
 export function AuthForm() {
   const [email, setEmail] = useState('');

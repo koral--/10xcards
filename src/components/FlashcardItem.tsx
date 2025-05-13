@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card } from './ui/card.tsx';
+import { Button } from './ui/button.tsx';
 import { Rotate3D, Trash2 } from 'lucide-react';
-import type { Flashcard } from '@/types/flashcard';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
+import type { Flashcard } from '../types/flashcard.ts';
+import { supabase } from '../lib/supabase.ts';
+import { useToast } from '../hooks/use-toast.ts';
 
 interface FlashcardItemProps {
   flashcard: Flashcard;

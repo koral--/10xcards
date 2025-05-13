@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import type { Flashcard } from '@/types/flashcard';
-import { FlashcardItem } from './FlashcardItem';
+import { supabase } from '../lib/supabase.ts';
+import type { Flashcard } from '../types/flashcard.ts';
+import { FlashcardItem } from './FlashcardItem.tsx';
 
 export function FlashcardList() {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
