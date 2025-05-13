@@ -1,0 +1,29 @@
+---
+import '@/styles/globals.css'
+import Layout from '../layouts/Layout.astro';
+import { FlashcardForm } from '@/components/FlashcardForm';
+import { FlashcardList } from '@/components/FlashcardList';
+import { Toaster } from '@/components/ui/toaster';
+---
+
+<Layout title="Flashcard Generator">
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto mb-12">
+      <h1 class="text-4xl font-bold mb-2">Flashcard Generator</h1>
+      <p class="text-muted-foreground mb-8">
+        Create flashcards by entering text below. Front side is limited to 200 characters, 
+        and back side is limited to 500 characters.
+      </p>
+      <FlashcardForm client:load onSuccess={() => {
+        // This will trigger a re-fetch in FlashcardList
+        window.location.reload();
+      }} />
+    </div>
+
+    <div class="mt-12">
+      <h2 class="text-2xl font-semibold mb-6">Your Flashcards</h2>
+      <FlashcardList client:load trigger={0} />
+    </div>
+  </main>
+  <Toaster client:load />
+</Layout>
