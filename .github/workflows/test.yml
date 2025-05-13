@@ -1,0 +1,30 @@
+   name: Run Unit Tests
+
+   on:
+     push:
+       branches:
+         - main
+     pull_request:
+
+   jobs:
+     test:
+       runs-on: ubuntu-latest
+
+       steps:
+         # Checkout the repository code
+         - name: Checkout code
+           uses: actions/checkout@v3
+
+         # Set up Node.js
+         - name: Set up Node.js
+           uses: actions/setup-node@v3
+           with:
+             node-version: '18' # Use the Node.js version you're using locally
+
+         # Install dependencies
+         - name: Install dependencies
+           run: npm install
+
+         # Run Jest tests
+         - name: Run tests
+           run: npm run test
