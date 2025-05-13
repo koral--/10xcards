@@ -3,16 +3,24 @@ import { supabase } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 import { FlashcardItem } from './FlashcardItem';
 
-export function FlashcardList({ trigger }: { trigger: number }) {
+export function FlashcardList() {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadFlashcards = async () => {
     setIsLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setFlashcards([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('flashcards')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -26,7 +34,29 @@ export function FlashcardList({ trigger }: { trigger: number }) {
 
   useEffect(() => {
     loadFlashcards();
-  }, [trigger]);
+
+    // Add event listener for flashcard creation
+    const handleFlashcardCreated = () => {
+      loadFlashcards();
+    };
+
+    window.addEventListener('flashcard-created', handleFlashcardCreated);
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        loadFlashcards();
+      } else if (event === 'SIGNED_OUT') {
+        setFlashcards([]);
+      }
+    });
+
+    // Cleanup event listeners
+    return () => {
+      window.removeEventListener('flashcard-created', handleFlashcardCreated);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   if (isLoading) {
     return <div className="text-center py-8">Loading flashcards...</div>;

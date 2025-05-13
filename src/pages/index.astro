@@ -3,7 +3,9 @@ import '@/styles/globals.css'
 import Layout from '../layouts/Layout.astro';
 import { FlashcardForm } from '@/components/FlashcardForm';
 import { FlashcardList } from '@/components/FlashcardList';
+import { AuthForm } from '@/components/AuthForm';
 import { Toaster } from '@/components/ui/toaster';
+import { Button } from '@/components/ui/button';
 ---
 
 <Layout title="Flashcard Generator">
@@ -11,19 +13,61 @@ import { Toaster } from '@/components/ui/toaster';
     <div class="max-w-2xl mx-auto mb-12">
       <h1 class="text-4xl font-bold mb-2">Flashcard Generator</h1>
       <p class="text-muted-foreground mb-8">
-        Create flashcards by entering text below. Front side is limited to 200 characters, 
-        and back side is limited to 500 characters.
+        Create and manage your personal flashcards. Sign in to get started.
       </p>
-      <FlashcardForm client:load onSuccess={() => {
-        // This will trigger a re-fetch in FlashcardList
-        window.location.reload();
-      }} />
-    </div>
+      
+      <div id="auth-container">
+        <AuthForm client:load />
+      </div>
 
-    <div class="mt-12">
-      <h2 class="text-2xl font-semibold mb-6">Your Flashcards</h2>
-      <FlashcardList client:load trigger={0} />
+      <div id="app-container" class="hidden">
+        <p class="text-muted-foreground mb-8">
+          Create flashcards by entering text below. Front side is limited to 200 characters, 
+          and back side is limited to 500 characters.
+        </p>
+        <FlashcardForm client:load />
+        
+        <div class="mt-12">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold">Your Flashcards</h2>
+            <Button id="sign-out-button" client:load>Sign Out</Button>
+          </div>
+          <FlashcardList client:load />
+        </div>
+      </div>
     </div>
   </main>
   <Toaster client:load />
 </Layout>
+
+<script>
+  import { supabase } from '@/lib/supabase';
+
+  const authContainer = document.getElementById('auth-container');
+  const appContainer = document.getElementById('app-container');
+  const signOutButton = document.getElementById('sign-out-button');
+
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      authContainer.classList.add('hidden');
+      appContainer.classList.remove('hidden');
+    } else {
+      authContainer.classList.remove('hidden');
+      appContainer.classList.add('hidden');
+    }
+  }
+
+  // Check auth status on page load
+  checkAuth();
+
+  // Listen for auth state changes
+  supabase.auth.onAuthStateChange((event, session) => {
+    checkAuth();
+  });
+
+  // Handle sign out
+  signOutButton?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+  });
+</script>

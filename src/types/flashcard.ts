@@ -3,4 +3,5 @@ export interface Flashcard {
   front: string;
   back: string;
   created_at: string;
+  user_id: string;
 }

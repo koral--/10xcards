@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 
-export function FlashcardForm({ onSuccess }: { onSuccess: () => void }) {
+export function FlashcardForm() {
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,30 +17,34 @@ export function FlashcardForm({ onSuccess }: { onSuccess: () => void }) {
     if (!isValid) return;
 
     setIsSubmitting(true);
-    try {
-      const { error } = await supabase
-        .from('flashcards')
-        .insert([{ front, back }]);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { error } = await supabase
+      .from('flashcards')
+      .insert([{ 
+        front, 
+        back,
+        user_id: user?.id 
+      }]);
 
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Flashcard created successfully.",
-      });
-
-      setFront('');
-      setBack('');
-      onSuccess();
-    } catch (error) {
+    if (error) {
       toast({
         title: "Error",
         description: "Failed to create flashcard. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      setFront('');
+      setBack('');
+      toast({
+        title: "Success!",
+        description: "Flashcard created successfully.",
+      });
+      window.dispatchEvent(new CustomEvent('flashcard-created'));
     }
+    
+    setIsSubmitting(false);
   }
 
   return (

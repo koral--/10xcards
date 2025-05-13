@@ -20,4 +20,4 @@ CREATE TABLE IF NOT EXISTS flashcards (
   created_at timestamptz DEFAULT now()
 );
 
-ALTER TABLE flashcards DISABLE ROW LEVEL SECURITY;
+ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
